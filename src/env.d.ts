@@ -17,3 +17,11 @@ export declare global {
 		}
 	}
 }
+
+declare module "vue" {
+	interface ImportMetaEnv {
+		VITE_WS_URL?: string;
+		VITE_WS_AUTH_TOKEN?: string;
+		VITE_USER_ID?: string;
+	}
+}

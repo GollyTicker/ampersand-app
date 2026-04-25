@@ -2,6 +2,7 @@ import { broadcastEvent } from "../native/plugin";
 import { DatabaseEventData } from "./types";
 import { securityConfig } from "../config";
 import { deleteFile } from "../serialization";
+import { sendFrontingChanged } from "../websocket";
 
 export const DatabaseEvents = new EventTarget();
 
@@ -24,6 +25,7 @@ DatabaseEvents.addEventListener("updated", (event) => {
 			break;
 		case "frontingEntries":
 			eventName = "frontingEntry";
+			void sendFrontingChanged();
 			break;
 		case "journalPosts":
 			eventName = "journalPost";
