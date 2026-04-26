@@ -38,9 +38,14 @@ android {
                 keyAlias = localProperties["keyAlias"] as String
                 keyPassword = localProperties["password"] as String
                 storeFile = file(localProperties["storeFile"] as String)
-                storePassword = localProperties["password"] as String
+                storePassword = localProperties["storePassword"] as String
             } else {
-                println("Keystore properties file not found. No signing configuration will be applied.")
+                println("Keystore properties file not found. Using debug keystore for unsigned build.")
+                // Use Android's debug keystore for unsigned builds
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+                storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+                storePassword = "android"
             }
         }
     }

@@ -9,13 +9,13 @@ on:
         required: true
     secrets:
       ANDROID_KEY_ALIAS:
-        required: true
+        required: false
       ANDROID_KEY_PASSWORD:
-        required: true
+        required: false
       ANDROID_KEY_BASE64:
-        required: true
+        required: false
       ANDROID_STORE_PASSWORD:
-        required: true
+        required: false
 
 # Sets the GITHUB_TOKEN permissions to allow deployment
 permissions:
@@ -58,13 +58,15 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Update versioning
         run: yarn run upgrade-vcs
-      - name: Set up Android signing
+      - name: Set up Android signing (optional)
+        if: ${{ secrets.ANDROID_KEY_ALIAS != '' }}
         run: |
           cd src-tauri/gen/android
           echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" > local.properties
           echo "password=${{ secrets.ANDROID_KEY_PASSWORD }}" >> local.properties
           base64 -d <<< "${{ secrets.ANDROID_KEY_BASE64 }}" > $RUNNER_TEMP/keystore.jks
           echo "storeFile=$RUNNER_TEMP/keystore.jks" >> local.properties
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" >> local.properties
       - name: Build app (APK)
         run: |
           yarn tauri android build --apk --target aarch64 armv7 --split-per-abi --ci
