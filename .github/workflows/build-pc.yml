@@ -1,5 +1,5 @@
-# Simple workflow for building Ampersand as a PC application
-name: Build for PC
+# Simple workflow for building Ampersand as a Linux application
+name: Build for Linux PC
 
 on:
   workflow_call:
@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ github.ref_name == 'main' && 'build-pc-dev' || 'build-pc-release' }}
+  group: ${{ github.ref_name == 'main' && 'build-linux-pc-dev' || 'build-linux-pc-release' }}
   cancel-in-progress: true
 
 jobs:
@@ -22,11 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest'
-            args: '--target universal-apple-darwin'
           - platform: 'ubuntu-latest'
-            args: ''
-          - platform: 'windows-latest'
             args: ''
     runs-on: ${{ matrix.platform }}
     steps:
@@ -84,14 +80,12 @@ jobs:
         with:
           upload_url: ${{ inputs.upload_url }}
           asset_path: ./src-tauri/target/release/bundle/deb/Ampersand_*.deb
-      - name: Publish to release (Linux RPM)
-        if: matrix.platform == 'ubuntu-latest'
+      - name: Publish to release (RPM)
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ inputs.upload_url }}
           asset_path: ./src-tauri/target/release/bundle/rpm/Ampersand-*.rpm
-      - name: Publish to release (Linux AppImage)
-        if: matrix.platform == 'ubuntu-latest'
+      - name: Publish to release (AppImage)
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           upload_url: ${{ inputs.upload_url }}

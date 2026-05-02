@@ -2,7 +2,7 @@
 	import { IonContent, IonHeader, IonList, IonPage, IonLabel, IonListHeader, IonTitle, IonToolbar, IonBackButton, IonItem, IonSelect, IonSelectOption, IonInput, IonToggle, IonIcon } from "@ionic/vue";
 	import { onMounted, shallowRef, useTemplateRef, watch } from "vue";
 
-	import { appConfig } from "../../lib/config";
+	import { appConfig, webSocketConfig } from "../../lib/config";
 	import { getSystem } from "../../lib/db/tables/system";
 	import SystemSelect from "../../modals/SystemSelect.vue";
 	import { System } from "../../lib/db/entities";
@@ -15,6 +15,7 @@
 	import peopleMD from "@material-symbols/svg-600/outlined/group.svg";
 	import journalMD from "@material-symbols/svg-600/outlined/book.svg";
 	import homeMD from "@material-symbols/svg-600/outlined/home.svg";
+	import wifiMD from "@material-symbols/svg-600/outlined/wifi.svg";
 	import SystemItem from "../../components/system/SystemItem.vue";
 
 	const defaultSystem = shallowRef<System>({
@@ -234,6 +235,50 @@
 						fill="solid"
 						label-placement="floating"
 						:label="$t('customFields:header')"
+					/>
+				</IonItem>
+			</IonList>
+
+			<IonListHeader>
+				<IonLabel>WebSocket</IonLabel>
+			</IonListHeader>
+
+			<IonList>
+				<IonItem button :detail="false">
+					<IonIcon slot="start" :icon="wifiMD" />
+					<IonToggle v-model="webSocketConfig.enabled">
+						<IonLabel>
+							appSettings:webSocket.enabled
+						</IonLabel>
+					</IonToggle>
+				</IonItem>
+
+				<IonItem>
+					<IonInput
+						v-model="webSocketConfig.wsUrl"
+						fill="solid"
+						label-placement="floating"
+						label="appSettings:webSocket.url"
+						type="url"
+					/>
+				</IonItem>
+
+				<IonItem>
+					<IonInput
+						v-model="webSocketConfig.wsAuthToken"
+						fill="solid"
+						label-placement="floating"
+						label="appSettings:webSocket.authToken"
+						type="password"
+					/>
+				</IonItem>
+
+				<IonItem>
+					<IonInput
+						v-model="webSocketConfig.wsUserId"
+						fill="solid"
+						label-placement="floating"
+						label="appSettings:webSocket.userId"
 					/>
 				</IonItem>
 			</IonList>

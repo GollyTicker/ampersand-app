@@ -1,6 +1,9 @@
 // setup console
 import "./lib/console";
 
+// WebSocket
+import { initWebSocket } from "./lib/websocket";
+
 // Vue and Ionic
 import { createApp, watch } from "vue";
 import { IonicVue } from "@ionic/vue";
@@ -73,6 +76,9 @@ async function setupAmpersand(){
 	}).use(router).use(I18NextVue, { i18next: i18n });
 
 	window.Ionic.config.set("navAnimation", slideAnimation);
+
+	// Initialize WebSocket connection
+	initWebSocket();
 
 	const maybeSystem = db.systems.index[0]?.uuid || undefined;
 

@@ -1,5 +1,5 @@
 import { reactive, watch } from "vue";
-import type { AccessibilityConfig, AppConfig, SecurityConfig } from "./types";
+import type { AccessibilityConfig, AppConfig, SecurityConfig, WebSocketConfig } from "./types";
 import { load } from "@tauri-apps/plugin-store";
 import { appConfigDir, sep } from "@tauri-apps/api/path";
 import { nilUid } from "../util/consts";
@@ -44,10 +44,18 @@ const defaultSecurityConfig: SecurityConfig = {
 	allowRemoteContent: false
 };
 
+const defaultWebSocketConfig: WebSocketConfig = {
+	enabled: false,
+	wsUrl: "",
+	wsAuthToken: "",
+	wsUserId: ""
+};
+
 const store = await load(`${await appConfigDir() + sep()}appConfig.json`);
 const appConfig = reactive<AppConfig>({ ...structuredClone(defaultAppConfig), ...await get("appConfig") });
 const accessibilityConfig = reactive<AccessibilityConfig>({ ...structuredClone(defaultAccessibilityConfig), ...await get("accessibilityConfig") });
 const securityConfig = reactive<SecurityConfig>({ ...structuredClone(defaultSecurityConfig), ...await get("securityConfig") });
+const webSocketConfig = reactive<WebSocketConfig>({ ...structuredClone(defaultWebSocketConfig), ...await get("webSocketConfig") });
 
 export function set(key: string, value: unknown): Promise<void> {
 	return store.set(key, value);
@@ -73,9 +81,13 @@ export function resetConfig(){
 	for (const key of Object.getOwnPropertyNames(securityConfig))
 		delete securityConfig[key];
 
+	for (const key of Object.getOwnPropertyNames(webSocketConfig))
+		delete webSocketConfig[key];
+
 	Object.assign(appConfig, structuredClone(defaultAppConfig));
 	Object.assign(accessibilityConfig, structuredClone(defaultAccessibilityConfig));
 	Object.assign(securityConfig, structuredClone(defaultSecurityConfig));
+	Object.assign(webSocketConfig, structuredClone(defaultWebSocketConfig));
 }
 
 watch(appConfig, async () => {
@@ -88,6 +100,10 @@ watch(accessibilityConfig, async () => {
 
 watch(securityConfig, async () => {
 	await set("securityConfig", { ...securityConfig });
+});
+
+watch(webSocketConfig, async () => {
+	await set("webSocketConfig", { ...webSocketConfig });
 });
 
 // config migration here
@@ -114,5 +130,6 @@ if ((appConfig as Record<string, unknown>).useIPC) {
 export {
 	appConfig,
 	accessibilityConfig,
-	securityConfig
+	securityConfig,
+	webSocketConfig
 };

@@ -65,24 +65,15 @@ jobs:
       upload_url: ${{ needs.prepare-build.outputs.upload_url }}
     permissions:
       contents: write
-  build-ios:
-    uses: ./.github/workflows/build-ios.yml
-    needs: prepare-build
-    secrets: inherit
-    with:
-      upload_url: ${{ needs.prepare-build.outputs.upload_url }}
-    permissions:
-      contents: write
-  build-pc:
+  build-linux-pc:
     uses: ./.github/workflows/build-pc.yml
     needs: prepare-build
-    secrets: inherit
     with:
       upload_url: ${{ needs.prepare-build.outputs.upload_url }}
     permissions:
       contents: write
   release:
-    needs: [prepare-build, build-android, build-ios, build-pc]
+    needs: [prepare-build, build-android, build-linux-pc]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

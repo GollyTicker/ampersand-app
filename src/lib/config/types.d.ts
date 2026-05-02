@@ -48,3 +48,10 @@ export type SecurityConfig = {
 	useIPC: boolean,
 	allowRemoteContent: boolean
 };
+
+export type WebSocketConfig = {
+	enabled: boolean,
+	wsUrl: string,
+	wsAuthToken: string,
+	wsUserId: string
+};
