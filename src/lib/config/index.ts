@@ -46,9 +46,9 @@ const defaultSecurityConfig: SecurityConfig = {
 
 const defaultWebSocketConfig: WebSocketConfig = {
 	enabled: false,
-	wsUrl: "",
-	wsAuthToken: "",
-	wsUserId: ""
+	wsBaseUrl: "https://public-test.pluralsync.ayake.net",
+	wsUsername: "",
+	wsPassword: ""
 };
 
 const store = await load(`${await appConfigDir() + sep()}appConfig.json`);

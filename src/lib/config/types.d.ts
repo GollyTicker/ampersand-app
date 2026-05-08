@@ -51,7 +51,7 @@ export type SecurityConfig = {
 
 export type WebSocketConfig = {
 	enabled: boolean,
-	wsUrl: string,
-	wsAuthToken: string,
-	wsUserId: string
+	wsBaseUrl: string,
+	wsUsername: string,
+	wsPassword: string
 };

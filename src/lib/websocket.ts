@@ -11,7 +11,7 @@ watch(webSocketConfig, () => {
 		ws = undefined;
 	}
 	if (reconnectTimeout) clearTimeout(reconnectTimeout);
-	if (webSocketConfig.enabled && webSocketConfig.wsUrl)
+	if (webSocketConfig.enabled && webSocketConfig.wsBaseUrl)
 		createConnection();
 });
 
@@ -19,8 +19,10 @@ let ws: WebSocket | undefined = undefined;
 let reconnectTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
 let pingInterval: ReturnType<typeof setInterval> | undefined = undefined;
 let frontersInterval: ReturnType<typeof setInterval> | undefined = undefined;
-let isAuthorized = false;
 let privacyFieldUuid: string | undefined;
+let jwtToken: string | undefined = undefined;
+
+const WS_PATH = "/api/user/platform/pluralsync/events";
 
 async function resolvePrivacyField() {
 	if (privacyFieldUuid !== undefined)
@@ -34,17 +36,69 @@ async function resolvePrivacyField() {
 	}
 }
 
+function getWsUrl(baseUrl: string): string {
+	const wsBaseUrl = baseUrl.replace("http://", "ws://").replace("https://", "wss://")
+	return `${wsBaseUrl}${WS_PATH}`;
+}
+
+async function loginAndGetJwt(): Promise<string> {
+	const baseUrl = webSocketConfig.wsBaseUrl;
+	if (!baseUrl) {
+		console.error("[WebSocket] No base URL configured for login");
+		return Promise.reject();
+	}
+
+	const loginUrl = `${baseUrl}/api/user/login`;
+	const body = JSON.stringify({
+		email: { inner: webSocketConfig.wsUsername },
+		password: { inner: { inner: webSocketConfig.wsPassword } }
+	});
+
+	try {
+		const response = await fetch(loginUrl, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body
+		});
+
+		if (!response.ok) {
+			console.error("[WebSocket] Login failed with status:", response.status);
+			return Promise.reject();
+		}
+
+		const json = await response.json();
+		const token = json?.inner as string | undefined;
+
+		if (!token) {
+			console.error("[WebSocket] Login response missing JWT token");
+			return Promise.reject();
+		}
+
+		console.log("[WebSocket] Login successful");
+		return token;
+	} catch (e) {
+		console.error("[WebSocket] Login request failed:", e);
+		return Promise.reject();
+	}
+}
+
 function createConnection() {
-	if (!webSocketConfig.enabled || !webSocketConfig.wsUrl) {
-		console.log("[WebSocket] Disabled or no URL configured");
+	if (!webSocketConfig.enabled || !webSocketConfig.wsBaseUrl) {
+		console.log("[WebSocket] Disabled or no base URL configured");
 		return;
 	}
 
-	ws = new WebSocket(webSocketConfig.wsUrl);
+	const wsUrl = getWsUrl(webSocketConfig.wsBaseUrl);
+	if (!wsUrl) {
+		console.error("[WebSocket] Could not construct WebSocket URL from base URL");
+		return;
+	}
 
-	ws.onopen = () => {
+	ws = new WebSocket(wsUrl);
+
+	ws.onopen = async () => {
 		console.log("[WebSocket] Connected");
-		attemptAuth();
+		await performLogin();
 		startPingPong();
 		startFrontersInterval();
 	};
@@ -66,7 +120,6 @@ function createConnection() {
 			}
 
 			if (data.type === "login" && data.result === "success") {
-				isAuthorized = true;
 				console.log("[WebSocket] Authenticated successfully");
 				void sendCurrentFronters();
 				return;
@@ -97,18 +150,26 @@ function createConnection() {
 		console.log("[WebSocket] Disconnected");
 		stopPingPong();
 		stopFrontersInterval();
-		isAuthorized = false;
+		jwtToken = undefined;
 
 		if (reconnectTimeout) clearTimeout(reconnectTimeout);
 		reconnectTimeout = setTimeout(createConnection, 10000);
 	};
 }
 
-function attemptAuth() {
+async function performLogin() {
+	if (!webSocketConfig.wsUsername || !webSocketConfig.wsPassword) {
+		console.error("[WebSocket] No credentials configured");
+		ws?.close();
+		return;
+	}
+
+	jwtToken = await loginAndGetJwt();
+
 	const authMessage = {
 		type: "login",
-		user: webSocketConfig.wsUserId,
-		auth: webSocketConfig.wsAuthToken
+		user: webSocketConfig.wsUsername,
+		auth: jwtToken
 	};
 
 	ws?.send(JSON.stringify(authMessage));
@@ -151,7 +212,7 @@ function getPrivacy(_memberUuid: string, customFields: Map<string, string> | und
 }
 
 async function sendCurrentFronters() {
-	if (!isAuthorized || ws?.readyState !== WebSocket.OPEN) return;
+	if (ws?.readyState !== WebSocket.OPEN) return;
 
 	try {
 		await resolvePrivacyField();
@@ -185,8 +246,8 @@ async function sendCurrentFronters() {
 }
 
 export function initWebSocket() {
-	if (!webSocketConfig.enabled || !webSocketConfig.wsUrl) {
-		console.log("[WebSocket] Disabled or no URL configured");
+	if (!webSocketConfig.enabled || !webSocketConfig.wsBaseUrl) {
+		console.log("[WebSocket] Disabled or no base URL configured");
 		return;
 	}
 
@@ -206,6 +267,6 @@ export function reconnect() {
 }
 
 export async function sendFrontingChanged() {
-	if (isAuthorized && ws?.readyState === WebSocket.OPEN)
+	if (ws?.readyState === WebSocket.OPEN)
 		await sendCurrentFronters();
 }

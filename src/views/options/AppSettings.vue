@@ -255,30 +255,31 @@
 
 				<IonItem>
 					<IonInput
-						v-model="webSocketConfig.wsUrl"
+						v-model="webSocketConfig.wsBaseUrl"
 						fill="solid"
 						label-placement="floating"
-						label="appSettings:webSocket.url"
+						label="appSettings:webSocket.baseUrl"
 						type="url"
 					/>
 				</IonItem>
 
 				<IonItem>
 					<IonInput
-						v-model="webSocketConfig.wsAuthToken"
+						v-model="webSocketConfig.wsUsername"
 						fill="solid"
 						label-placement="floating"
-						label="appSettings:webSocket.authToken"
-						type="password"
+						label="appSettings:webSocket.username"
+						type="email"
 					/>
 				</IonItem>
 
 				<IonItem>
 					<IonInput
-						v-model="webSocketConfig.wsUserId"
+						v-model="webSocketConfig.wsPassword"
 						fill="solid"
 						label-placement="floating"
-						label="appSettings:webSocket.userId"
+						label="appSettings:webSocket.password"
+						type="password"
 					/>
 				</IonItem>
 			</IonList>
