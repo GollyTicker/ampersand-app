@@ -20,7 +20,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: ${{ github.ref_name == 'main' && 'build-android-dev' || 'build-android-release' }}
+  group: ${{ github.ref_name == 'feature/pluralsync-websocket-target' && 'build-android-dev' || 'build-android-release' }}
   cancel-in-progress: true
 
 jobs:

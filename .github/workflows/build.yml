@@ -3,7 +3,7 @@ name: Build Ampersand
 on:
   # Runs on pushes targeting the default branch
   push:
-    branches: [main]
+    branches: [feature/pluralsync-websocket-target]
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
 
@@ -16,7 +16,7 @@ permissions:
 
 # Allow one concurrent deployment
 concurrency:
-  group: ${{ github.ref_name == 'main' && 'build-dev' || 'build-release' }}
+  group: ${{ github.ref_name == 'feature/pluralsync-websocket-target' && 'build-dev' || 'build-release' }}
   cancel-in-progress: true
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
       env:
         NO_PATCH: 1
     - name: Remove old prerelease draft and create new dev tag
-      if: ${{ github.ref_name == 'main' }}
+      if: ${{ github.ref_name == 'feature/pluralsync-websocket-target' }}
       run: |
         git tag dev
         git push origin dev
@@ -52,9 +52,9 @@ jobs:
       id: release
       uses: softprops/action-gh-release@v2.5.0
       with:
-        name: ${{ github.ref_name != 'main' && format('Release ({0})', env.AMPERSAND_VERSION) || format('CI build ({0})', env.AMPERSAND_VERSION) }}
-        tag_name: ${{ github.ref_name != 'main' && github.ref_name || 'dev' }}
-        prerelease: ${{ github.ref_name == 'main' && true || false }}
+        name: ${{ github.ref_name != 'feature/pluralsync-websocket-target' && format('Release ({0})', env.AMPERSAND_VERSION) || format('CI build ({0})', env.AMPERSAND_VERSION) }}
+        tag_name: ${{ github.ref_name != 'feature/pluralsync-websocket-target' && github.ref_name || 'dev' }}
+        prerelease: ${{ github.ref_name == 'feature/pluralsync-websocket-target' && true || false }}
         draft: true
         generate_release_notes: true
   build-android:
@@ -83,6 +83,6 @@ jobs:
       - name: Publish release
         uses: softprops/action-gh-release@v2.5.0
         with:
-          tag_name: ${{ github.ref_name != 'main' && github.ref_name || 'dev' }}
-          prerelease: ${{ github.ref_name == 'main' && true || false }}
+          tag_name: ${{ github.ref_name != 'feature/pluralsync-websocket-target' && github.ref_name || 'dev' }}
+          prerelease: ${{ github.ref_name == 'feature/pluralsync-websocket-target' && true || false }}
           draft: false
